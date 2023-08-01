@@ -245,6 +245,34 @@ def main_c():
                     summary = "Software Engineering "
                 elif "CSET211" in value:
                     summary = "Statistical Machine Learning "
+                elif "CSET212" in value:
+                    summary = "Blockchain Foundations "
+                elif "CSET213" in value:
+                    summary = "Linux and Shell Programming "
+                elif "CSET214" in value:
+                    summary = "Data Analysis using Python "
+                elif "CSET215" in value:
+                    summary = "Graphics and Visual Computing "
+                elif "CSET216" in value:
+                    summary = "UI/UX Design for Human Computer Interface "
+                elif "CSET217" in value:
+                    summary = "Software Development with DevOps "
+                elif "CSET218" in value:
+                    summary = "Full Stack Development "
+                elif "CSET219" in value:
+                    summary = "Quantum Computing Foundations "
+                elif "CSET220" in value:
+                    summary = "Unmanned Aerial Vehicles "
+                elif "CSET221" in value:
+                    summary = "Robotic Process Automation Essentials "
+                elif "CSET222" in value:
+                    summary = "Microcontrollers, Robotics & Embedded Systems "
+                elif "CSET223" in value:
+                    summary = "Augmented Reality Foundations "
+                elif "CSET224" in value:
+                    summary = "Cloud Computing "
+                elif "CSET238" in value:
+                    summary = "Product Design Principles and Practice "
                 if "(L)" in value:
                     summary += "Lecture"
                 elif "(T)" in value:
