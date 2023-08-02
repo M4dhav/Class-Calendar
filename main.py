@@ -138,14 +138,16 @@ authorization_url = asyncio.run(
                             redirect_uri=redirect_uri))
 
 st.title('Timetable Excel Sheet to Google Calendar')
-print(st.experimental_get_query_params())
 st.session_state.token = None
 try:
     st.session_state.token = st.experimental_get_query_params()['code']
-    st.write(st.session_state.token)
+    st.experimental_set_query_params()
 except:
     pass
-st.write(f'''<h1><a target="_self"href="{authorization_url}">LOGIN</a></h1>''',unsafe_allow_html=True)
+if st.session_state.token:
+    pass
+else:
+    st.write(f'''<h1><a target="_self"href="{authorization_url}">LOGIN</a></h1>''',unsafe_allow_html=True)
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 if st.session_state.token:
     uploaded_file = st.file_uploader("Choose a file")
