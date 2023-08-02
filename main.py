@@ -1,7 +1,6 @@
 from __future__ import print_function
 import datetime
 import os.path
-from google_auth_oauthlib.flow import Flow
 import openpyxl
 import streamlit as st
 from dotenv import load_dotenv
@@ -9,27 +8,6 @@ from xls2xlsx import XLS2XLSX
 from ics import Calendar, Event
 
 load_dotenv()
-
-
-c_secret = os.getenv('CLIENT_SECRET')
-web_flow = Flow.from_client_config(
-    client_config={
-        "web": {
-            "client_id": os.getenv('CLIENT_ID'),
-            "client_secret": c_secret,
-            "redirect_uri": os.getenv('REDIRECT_URI'),
-            "scopes": ['https://www.googleapis.com/auth/calendar'],
-            "auth_uri": 'https://accounts.google.com/o/oauth2/auth',
-            "token_uri": 'https://oauth2.googleapis.com/token'
-        }
-    },
-    scopes = ['https://www.googleapis.com/auth/calendar'],
-    redirect_uri = os.getenv('REDIRECT_URI')
-)
-
-authorization_url, state = web_flow.authorization_url(
-    access_type='offline',
-    include_granted_scopes='true')
 
 def connectionAPI(coursenames, rooms, cal):
     for i in range(5):
