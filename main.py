@@ -144,7 +144,7 @@ else:
     st.write(f'''<h1><a target="_self"href="{authorization_url}">LOGIN</a></h1>''',unsafe_allow_html=True)
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 if st.session_state.token:
-    uploaded_file = st.file_uploader("Choose a file")
+    uploaded_file = st.file_uploader("Choose a file", ["xls","xlsx"])
 
 
     if uploaded_file is not None:
