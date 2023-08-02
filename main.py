@@ -1,10 +1,10 @@
 from __future__ import print_function
 import datetime
-import os.path
 import openpyxl
+
 import streamlit as st
-from xls2xlsx import XLS2XLSX
 from ics import Calendar, Event
+from xls2xlsx import XLS2XLSX
 
 def connectionAPI(coursenames, rooms, cal):
     for i in range(5):
@@ -120,7 +120,7 @@ def create_event(summary, location, description,dstart,tstart, tend, cal_ref ):
         cal_ref.events.add(e)
         tstart = tstart + datetime.timedelta(days=7)
         tend = tend + datetime.timedelta(days=7)
-def parse(wb,specialisation):
+def parse(wb,specialisation, workbook):
     match specialisation:
         case "AI":
             splcourse = "CSET211"
@@ -152,7 +152,10 @@ def parse(wb,specialisation):
             splcourse = "CSET238"
         case "Cloud Computing":
             splcourse = "CSET224"
-    ttwb = openpyxl.load_workbook(wb)
+    if workbook:
+        ttwb = wb
+    else:
+        ttwb = openpyxl.load_workbook(wb)
     tt = ttwb.active
     coursenames = [[],[],[],[],[]]
     rooms = [[],[],[],[],[]]
@@ -212,11 +215,14 @@ uploaded_file = st.file_uploader("Choose a file", ["xls"])
 
 
 if uploaded_file is not None:
-    x2x = XLS2XLSX(uploaded_file)
-    current_timestamp = datetime.datetime.now().timestamp()
-    x2x.to_xlsx(f"{current_timestamp}.xlsx")
-    coursenames, rooms=parse(f"{current_timestamp}.xlsx",specialisation)
-    os.remove(f"{current_timestamp}.xlsx")
+    if uploaded_file.name.endswith(".xls"):
+        x2x = XLS2XLSX("spreadsheet.xls")
+        wb = x2x.to_xlsx()
+        coursenames, rooms = parse(
+            wb,
+            specialisation, True)
+    else:
+        coursenames, rooms=parse(uploaded_file,specialisation, False)
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
     with open('my.ics', 'w') as f:
