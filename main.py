@@ -1,180 +1,150 @@
 from __future__ import print_function
-import asyncio
 import datetime
 import os.path
-import io
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from google_auth_oauthlib.flow import Flow
 import openpyxl
 import streamlit as st
-from httpx_oauth.clients.google import GoogleOAuth2
 from dotenv import load_dotenv
 from xls2xlsx import XLS2XLSX
+from ics import Calendar, Event
 
 load_dotenv()
 
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-redirect_uri = os.getenv("REDIRECT_URI")
-scopes = os.getenv("SCOPES")
-client = GoogleOAuth2(client_id, client_secret)
 
-def connectionAPI(coursenames, rooms, scopes):
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', scopes)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', scopes)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    try:
-        calendar = {
-        'summary': 'Bennett Sem 3 Timetable',
-        'timeZone': 'Asia/Kolkata'
+c_secret = os.getenv('CLIENT_SECRET')
+web_flow = Flow.from_client_config(
+    client_config={
+        "web": {
+            "client_id": os.getenv('CLIENT_ID'),
+            "client_secret": c_secret,
+            "redirect_uri": os.getenv('REDIRECT_URI'),
+            "scopes": ['https://www.googleapis.com/auth/calendar'],
+            "auth_uri": 'https://accounts.google.com/o/oauth2/auth',
+            "token_uri": 'https://oauth2.googleapis.com/token'
         }
-        service = build('calendar', 'v3', credentials=creds)
-        created_calendar = service.calendars().insert(body=calendar).execute()
-        calid = created_calendar['id']
-        for i in range(5):
-            for j in range(9):
-                value = coursenames[i][j]
-                match i:
-                    case 0:
-                        dstart = '07'
-                    case 1:
-                        dstart = '01'
-                    case 2:
-                        dstart = '02'
-                    case 3:
-                        dstart = '03'
-                    case 4:
-                        dstart = '04'
-                match j:
-                    case 0:
-                        tstart = '08'
-                        tend = '09'
-                    case 1:
-                        tstart = '09'
-                        tend = '10'
-                    case 2:
-                        tstart = '10'
-                        tend = '11'
-                    case 3:
-                        tstart = '11'
-                        tend = '12'
-                    case 4:
-                        tstart = '12'
-                        tend = '13'
-                    case 5:
-                        tstart = '13'
-                        tend = '14'
-                    case 6:
-                        tstart = '14'
-                        tend = '15'
-                    case 7:
-                        tstart = '15'
-                        tend = '16'
-                    case 8:
-                        tstart = '16'
-                        tend = '17'
-                location = rooms[i][j]
-                description = coursenames[i][j]
-                if coursenames[i][j] == "Free":
-                        continue
-                elif "CSET201" in value:
-                    summary = "Information Management Systems "
-                elif "CSET202" in value:
-                    summary = "Data Structures using C++ "
-                elif "CSET203" in value:
-                    summary = "Microprocessors and Computer Architecture "
-                elif "CSET240" in value:
-                    summary = "Probability and Statistics "
-                elif "CSET205" in value:
-                    summary = "Software Engineering "
-                elif "CSET211" in value:
-                    summary = "Statistical Machine Learning "
-                elif "CSET212" in value:
-                    summary = "Blockchain Foundations "
-                elif "CSET213" in value:
-                    summary = "Linux and Shell Programming "
-                elif "CSET214" in value:
-                    summary = "Data Analysis using Python "
-                elif "CSET215" in value:
-                    summary = "Graphics and Visual Computing "
-                elif "CSET216" in value:
-                    summary = "UI/UX Design for Human Computer Interface "
-                elif "CSET217" in value:
-                    summary = "Software Development with DevOps "
-                elif "CSET218" in value:
-                    summary = "Full Stack Development "
-                elif "CSET219" in value:
-                    summary = "Quantum Computing Foundations "
-                elif "CSET220" in value:
-                    summary = "Unmanned Aerial Vehicles "
-                elif "CSET221" in value:
-                    summary = "Robotic Process Automation Essentials "
-                elif "CSET222" in value:
-                    summary = "Microcontrollers, Robotics & Embedded Systems "
-                elif "CSET223" in value:
-                    summary = "Augmented Reality Foundations "
-                elif "CSET224" in value:
-                    summary = "Cloud Computing "
-                elif "CSET238" in value:
-                    summary = "Product Design Principles and Practice "
-                if "(L)" in value:
-                    summary += "Lecture"
-                elif "(T)" in value:
-                    summary += "Tutorial"
-                elif "(P)" in value:
-                    summary += "Lab"
-                create_event(summary, location, description,dstart,tstart, tend,calid, creds)
-                print("Successfull")
+    },
+    scopes = ['https://www.googleapis.com/auth/calendar'],
+    redirect_uri = os.getenv('REDIRECT_URI')
+)
 
-    except HttpError as error:
-        print('An error occurred: %s' % error)
+authorization_url, state = web_flow.authorization_url(
+    access_type='offline',
+    include_granted_scopes='true')
 
-def create_event(summary, location, description,dstart,tstart, tend,calid, creds ):
-    service = build('calendar', 'v3', credentials=creds)
+def connectionAPI(coursenames, rooms, cal):
+    for i in range(5):
+        for j in range(9):
+            value = coursenames[i][j]
+            match i:
+                case 0:
+                    dstart = '07'
+                case 1:
+                    dstart = '01'
+                case 2:
+                    dstart = '02'
+                case 3:
+                    dstart = '03'
+                case 4:
+                    dstart = '04'
+            match j:
+                case 0:
+                    tstart = '08'
+                    tend = '09'
+                case 1:
+                    tstart = '09'
+                    tend = '10'
+                case 2:
+                    tstart = '10'
+                    tend = '11'
+                case 3:
+                    tstart = '11'
+                    tend = '12'
+                case 4:
+                    tstart = '12'
+                    tend = '13'
+                case 5:
+                    tstart = '13'
+                    tend = '14'
+                case 6:
+                    tstart = '14'
+                    tend = '15'
+                case 7:
+                    tstart = '15'
+                    tend = '16'
+                case 8:
+                    tstart = '16'
+                    tend = '17'
+            location = rooms[i][j]
+            description = coursenames[i][j]
+            if coursenames[i][j] == "Free":
+                    continue
+            elif "CSET201" in value:
+                summary = "Information Management Systems "
+            elif "CSET202" in value:
+                summary = "Data Structures using C++ "
+            elif "CSET203" in value:
+                summary = "Microprocessors and Computer Architecture "
+            elif "CSET240" in value:
+                summary = "Probability and Statistics "
+            elif "CSET205" in value:
+                summary = "Software Engineering "
+            elif "CSET211" in value:
+                summary = "Statistical Machine Learning "
+            elif "CSET212" in value:
+                summary = "Blockchain Foundations "
+            elif "CSET213" in value:
+                summary = "Linux and Shell Programming "
+            elif "CSET214" in value:
+                summary = "Data Analysis using Python "
+            elif "CSET215" in value:
+                summary = "Graphics and Visual Computing "
+            elif "CSET216" in value:
+                summary = "UI/UX Design for Human Computer Interface "
+            elif "CSET217" in value:
+                summary = "Software Development with DevOps "
+            elif "CSET218" in value:
+                summary = "Full Stack Development "
+            elif "CSET219" in value:
+                summary = "Quantum Computing Foundations "
+            elif "CSET220" in value:
+                summary = "Unmanned Aerial Vehicles "
+            elif "CSET221" in value:
+                summary = "Robotic Process Automation Essentials "
+            elif "CSET222" in value:
+                summary = "Microcontrollers, Robotics & Embedded Systems "
+            elif "CSET223" in value:
+                summary = "Augmented Reality Foundations "
+            elif "CSET224" in value:
+                summary = "Cloud Computing "
+            elif "CSET238" in value:
+                summary = "Product Design Principles and Practice "
+            if "(L)" in value:
+                summary += "Lecture"
+            elif "(T)" in value:
+                summary += "Tutorial"
+            elif "(P)" in value:
+                summary += "Lab"
+            create_event(summary, location, description,dstart,tstart, tend,cal)
 
-        # Call the Calendar API
-    event = {
-            'summary': summary,
-            'location': location,
-            'description': description,
-            'start': {
-                'dateTime': '2023-08-'+dstart+'T'+tstart+':30:00+05:30',
-                'timeZone': 'Asia/Kolkata',
-            },
-            'end': {
-                'dateTime': '2023-08-'+dstart+'T'+tend+':30:00+05:30',
-                'timeZone': 'Asia/Kolkata',
-            },
-            'recurrence': [
-                'RRULE:FREQ=WEEKLY;COUNT=22'
-            ],
-            'attendees': [
-            ],
-            'reminders': {
-                'useDefault': True,
-            },
-        }
-    event = service.events().insert(calendarId=calid, body=event).execute()
-    print('Event created: %s' % (event.get('htmlLink')))
 
+def create_event(summary, location, description,dstart,tstart, tend, cal_ref ):
+        # Call the Calendar API  
+    dstart = int(dstart)
+    tstart = int(tstart)
+    tend = int(tend)
+    tstart = datetime.datetime(2023, 8, dstart, tstart, 30)
+    tend = datetime.datetime(2023, 8, dstart, tend, 30)
+
+    for i in range(22):
+        e = Event()
+        e.name=summary
+        e.begin = tstart
+        e.end = tend
+        e.location = location
+        e.description = description
+        cal_ref.events.add(e)
+        tstart = tstart + datetime.timedelta(days=7)
+        tend = tend + datetime.timedelta(days=7)
 def parse(wb,specialisation):
     match specialisation:
         case "AI":
@@ -252,38 +222,35 @@ def parse(wb,specialisation):
         c += 1
     return coursenames, rooms
 
-async def write_authorization_url(client,redirect_uri):
-    authorization_url = await client.get_authorization_url(redirect_uri,scope=scopes,extras_params={"access_type": "offline"},)
-    return authorization_url
-authorization_url = asyncio.run(write_authorization_url(client=client,redirect_uri=redirect_uri))
 
 st.title('Timetable Excel Sheet to Google Calendar')
 st.session_state.token = None
-try:
-    st.session_state.token = st.experimental_get_query_params()['code']
-    st.experimental_set_query_params()
-except:
-    pass
-if st.session_state.token:
-    pass
-else:
-    st.write(f'''<h1><a target="_self"href="{authorization_url}">LOGIN</a></h1>''',unsafe_allow_html=True)
+
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
-if st.session_state.token:
-    uploaded_file = st.file_uploader("Choose a file", ["xls","xlsx"])
+
+uploaded_file = st.file_uploader("Choose a file", ["xls","xlsx"])
 
 
-    if uploaded_file is not None:
-        try:
-            x2x = XLS2XLSX(uploaded_file)
-            x2x.to_xlsx("spreadsheet.xlsx")
-            coursenames, rooms=parse("spreadsheet.xlsx",specialisation)
-        except ValueError:
-            coursenames, rooms = parse(uploaded_file, specialisation)
-        st.write(coursenames)
-        st.write(rooms)
-        print(coursenames)
-        print(rooms)
+if uploaded_file is not None:
+    if uploaded_file.name.endswith(".xls"):
+        x2x = XLS2XLSX(uploaded_file)
+        x2x.to_xlsx("spreadsheet.xlsx")
+        coursenames, rooms=parse("spreadsheet.xlsx",specialisation)
+    else:
+        coursenames, rooms = parse(uploaded_file, specialisation)
+    cal = Calendar()
+    connectionAPI(coursenames, rooms, cal)
+    with open('my.ics', 'w') as f:
+        f.writelines(cal.serialize_iter())
+    st.write("Download the generated ics file")
+    st.download_button(label="Download",data=cal.serialize(),file_name="timetable.ics",mime="text/calendar")
+    st.write("We recommend creating a new calendar in your google calendar and importing the ics file into it.")
+    st.write("You can then delete the calendar after the semester is over.")
+
+    st.write("[Create new calendar in google calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/createcalendar)")
 
 
+    st.write("Import the ics file into your new calendar")
+
+    st.write("[Import ics file into new calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/export)")
 
