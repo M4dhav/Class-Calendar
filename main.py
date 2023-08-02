@@ -21,6 +21,131 @@ client_secret = os.getenv("CLIENT_SECRET")
 redirect_uri = os.getenv("REDIRECT_URI")
 client = GoogleOAuth2(client_id, client_secret)
 
+def connectionAPI(coursenames, rooms):
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    try:
+        calendar = {
+        'summary': 'Bennett Sem 3 Timetable',
+        'timeZone': 'Asia/Kolkata'
+        }
+        service = build('calendar', 'v3', credentials=creds)
+        created_calendar = service.calendars().insert(body=calendar).execute()
+        calid = created_calendar['id']
+        for i in range(5):
+            for j in range(9):
+                value = coursenames[i][j]
+                match i:
+                    case 0:
+                        dstart = '07'
+                    case 1:
+                        dstart = '01'
+                    case 2:
+                        dstart = '02'
+                    case 3:
+                        dstart = '03'
+                    case 4:
+                        dstart = '04'
+                match j:
+                    case 0:
+                        tstart = '08'
+                        tend = '09'
+                    case 1:
+                        tstart = '09'
+                        tend = '10'
+                    case 2:
+                        tstart = '10'
+                        tend = '11'
+                    case 3:
+                        tstart = '11'
+                        tend = '12'
+                    case 4:
+                        tstart = '12'
+                        tend = '13'
+                    case 5:
+                        tstart = '13'
+                        tend = '14'
+                    case 6:
+                        tstart = '14'
+                        tend = '15'
+                    case 7:
+                        tstart = '15'
+                        tend = '16'
+                    case 8:
+                        tstart = '16'
+                        tend = '17'
+                location = rooms[i][j]
+                description = coursenames[i][j]
+                if coursenames[i][j] == "Free":
+                        continue
+                elif "CSET201" in value:
+                    summary = "Information Management Systems "
+                elif "CSET202" in value:
+                    summary = "Data Structures using C++ "
+                elif "CSET203" in value:
+                    summary = "Microprocessors and Computer Architecture "
+                elif "CSET240" in value:
+                    summary = "Probability and Statistics "
+                elif "CSET205" in value:
+                    summary = "Software Engineering "
+                elif "CSET211" in value:
+                    summary = "Statistical Machine Learning "
+                elif "CSET212" in value:
+                    summary = "Blockchain Foundations "
+                elif "CSET213" in value:
+                    summary = "Linux and Shell Programming "
+                elif "CSET214" in value:
+                    summary = "Data Analysis using Python "
+                elif "CSET215" in value:
+                    summary = "Graphics and Visual Computing "
+                elif "CSET216" in value:
+                    summary = "UI/UX Design for Human Computer Interface "
+                elif "CSET217" in value:
+                    summary = "Software Development with DevOps "
+                elif "CSET218" in value:
+                    summary = "Full Stack Development "
+                elif "CSET219" in value:
+                    summary = "Quantum Computing Foundations "
+                elif "CSET220" in value:
+                    summary = "Unmanned Aerial Vehicles "
+                elif "CSET221" in value:
+                    summary = "Robotic Process Automation Essentials "
+                elif "CSET222" in value:
+                    summary = "Microcontrollers, Robotics & Embedded Systems "
+                elif "CSET223" in value:
+                    summary = "Augmented Reality Foundations "
+                elif "CSET224" in value:
+                    summary = "Cloud Computing "
+                elif "CSET238" in value:
+                    summary = "Product Design Principles and Practice "
+                if "(L)" in value:
+                    summary += "Lecture"
+                elif "(T)" in value:
+                    summary += "Tutorial"
+                elif "(P)" in value:
+                    summary += "Lab"
+                create_event(summary, location, description,dstart,tstart, tend,calid, creds)
+                print("Successfull")
+
+    except HttpError as error:
+        print('An error occurred: %s' % error)
+
 def create_event(summary, location, description,dstart,tstart, tend,calid, creds ):
     service = build('calendar', 'v3', credentials=creds)
 
@@ -158,134 +283,6 @@ if st.session_state.token:
         st.write(rooms)
         print(coursenames)
         print(rooms)
-    
-
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
-def main_c():
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    try:
-        calendar = {
-        'summary': 'Bennett Sem 3 Timetable',
-        'timeZone': 'Asia/Kolkata'
-        }
-        service = build('calendar', 'v3', credentials=creds)
-        created_calendar = service.calendars().insert(body=calendar).execute()
-        calid = created_calendar['id']
-        for i in range(5):
-            for j in range(9):
-                value = coursenames[i][j]
-                match i:
-                    case 0:
-                        dstart = '07'
-                    case 1:
-                        dstart = '01'
-                    case 2:
-                        dstart = '02'
-                    case 3:
-                        dstart = '03'
-                    case 4:
-                        dstart = '04'
-                match j:
-                    case 0:
-                        tstart = '08'
-                        tend = '09'
-                    case 1:
-                        tstart = '09'
-                        tend = '10'
-                    case 2:
-                        tstart = '10'
-                        tend = '11'
-                    case 3:
-                        tstart = '11'
-                        tend = '12'
-                    case 4:
-                        tstart = '12'
-                        tend = '13'
-                    case 5:
-                        tstart = '13'
-                        tend = '14'
-                    case 6:
-                        tstart = '14'
-                        tend = '15'
-                    case 7:
-                        tstart = '15'
-                        tend = '16'
-                    case 8:
-                        tstart = '16'
-                        tend = '17'
-                location = rooms[i][j]
-                description = coursenames[i][j]
-                if coursenames[i][j] == "Free":
-                        continue
-                elif "CSET201" in value:
-                    summary = "Information Management Systems "
-                elif "CSET202" in value:
-                    summary = "Data Structures using C++ "
-                elif "CSET203" in value:
-                    summary = "Microprocessors and Computer Architecture "
-                elif "CSET240" in value:
-                    summary = "Probability and Statistics "
-                elif "CSET205" in value:
-                    summary = "Software Engineering "
-                elif "CSET211" in value:
-                    summary = "Statistical Machine Learning "
-                elif "CSET212" in value:
-                    summary = "Blockchain Foundations "
-                elif "CSET213" in value:
-                    summary = "Linux and Shell Programming "
-                elif "CSET214" in value:
-                    summary = "Data Analysis using Python "
-                elif "CSET215" in value:
-                    summary = "Graphics and Visual Computing "
-                elif "CSET216" in value:
-                    summary = "UI/UX Design for Human Computer Interface "
-                elif "CSET217" in value:
-                    summary = "Software Development with DevOps "
-                elif "CSET218" in value:
-                    summary = "Full Stack Development "
-                elif "CSET219" in value:
-                    summary = "Quantum Computing Foundations "
-                elif "CSET220" in value:
-                    summary = "Unmanned Aerial Vehicles "
-                elif "CSET221" in value:
-                    summary = "Robotic Process Automation Essentials "
-                elif "CSET222" in value:
-                    summary = "Microcontrollers, Robotics & Embedded Systems "
-                elif "CSET223" in value:
-                    summary = "Augmented Reality Foundations "
-                elif "CSET224" in value:
-                    summary = "Cloud Computing "
-                elif "CSET238" in value:
-                    summary = "Product Design Principles and Practice "
-                if "(L)" in value:
-                    summary += "Lecture"
-                elif "(T)" in value:
-                    summary += "Tutorial"
-                elif "(P)" in value:
-                    summary += "Lab"
-                create_event(summary, location, description,dstart,tstart, tend,calid, creds)
-                print("Successfull")
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
 
