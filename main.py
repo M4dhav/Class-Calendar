@@ -19,22 +19,23 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 redirect_uri = os.getenv("REDIRECT_URI")
+scopes = os.getenv("SCOPES")
 client = GoogleOAuth2(client_id, client_secret)
 
-def connectionAPI(coursenames, rooms):
+def connectionAPI(coursenames, rooms, scopes):
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        creds = Credentials.from_authorized_user_file('token.json', scopes)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                'credentials.json', scopes)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -252,7 +253,7 @@ def parse(wb,specialisation):
     return coursenames, rooms
 
 async def write_authorization_url(client,redirect_uri):
-    authorization_url = await client.get_authorization_url(redirect_uri,scope=["https://www.googleapis.com/auth/calendar"],extras_params={"access_type": "offline"},)
+    authorization_url = await client.get_authorization_url(redirect_uri,scope=scopes,extras_params={"access_type": "offline"},)
     return authorization_url
 authorization_url = asyncio.run(write_authorization_url(client=client,redirect_uri=redirect_uri))
 
