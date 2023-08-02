@@ -198,8 +198,13 @@ def parse(wb,specialisation):
     return coursenames, rooms
 
 
+st.set_page_config(
+        page_title="Timetable to Google Calendar",
+        page_icon="📅",
+)
+
 st.title('Timetable Excel Sheet to Google Calendar')
-st.session_state.token = None
+st.subheader('Made by [M4dhav](https://madhavgupta.vercel.app/) & [Rachit](https://rachitkhurana.tech)')
 
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 

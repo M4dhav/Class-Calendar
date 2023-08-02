@@ -1,3 +1,4 @@
 openpyxl
 ics
 streamlit
+xls2xlsx
