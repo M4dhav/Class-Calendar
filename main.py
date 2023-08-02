@@ -208,18 +208,15 @@ st.subheader('Made by [M4dhav](https://madhavgupta.vercel.app/) & [Rachit](https
 
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 
-uploaded_file = st.file_uploader("Choose a file", ["xls","xlsx"])
+uploaded_file = st.file_uploader("Choose a file", ["xls"])
 
 
 if uploaded_file is not None:
-    try:
-        x2x = XLS2XLSX(uploaded_file)
-        current_timestamp = datetime.datetime.now().timestamp()
-        x2x.to_xlsx(f"{current_timestamp}.xlsx")
-        coursenames, rooms=parse(f"{current_timestamp}.xlsx",specialisation)
-        os.remove(f"{current_timestamp}.xlsx")
-    except ValueError:
-        coursenames, rooms = parse(uploaded_file, specialisation)
+    x2x = XLS2XLSX(uploaded_file)
+    current_timestamp = datetime.datetime.now().timestamp()
+    x2x.to_xlsx(f"{current_timestamp}.xlsx")
+    coursenames, rooms=parse(f"{current_timestamp}.xlsx",specialisation)
+    os.remove(f"{current_timestamp}.xlsx")
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
     with open('my.ics', 'w') as f:
