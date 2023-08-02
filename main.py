@@ -232,11 +232,13 @@ uploaded_file = st.file_uploader("Choose a file", ["xls","xlsx"])
 
 
 if uploaded_file is not None:
-    if uploaded_file.name.endswith(".xls"):
+    try:
         x2x = XLS2XLSX(uploaded_file)
-        x2x.to_xlsx("spreadsheet.xlsx")
-        coursenames, rooms=parse("spreadsheet.xlsx",specialisation)
-    else:
+        current_timestamp = datetime.datetime.now().timestamp()
+        x2x.to_xlsx(f"{current_timestamp}.xlsx")
+        coursenames, rooms=parse(f"{current_timestamp}.xlsx",specialisation)
+        os.remove(f"{current_timestamp}.xlsx")
+    except ValueError:
         coursenames, rooms = parse(uploaded_file, specialisation)
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
