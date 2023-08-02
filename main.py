@@ -3,11 +3,8 @@ import datetime
 import os.path
 import openpyxl
 import streamlit as st
-from dotenv import load_dotenv
 from xls2xlsx import XLS2XLSX
 from ics import Calendar, Event
-
-load_dotenv()
 
 def connectionAPI(coursenames, rooms, cal):
     for i in range(5):
