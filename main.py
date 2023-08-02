@@ -12,6 +12,7 @@ import openpyxl
 import streamlit as st
 from httpx_oauth.clients.google import GoogleOAuth2
 from dotenv import load_dotenv
+from xls2xlsx import XLS2XLSX
 
 load_dotenv()
 
@@ -48,7 +49,7 @@ def create_event(summary, location, description,dstart,tstart, tend,calid, creds
     event = service.events().insert(calendarId=calid, body=event).execute()
     print('Event created: %s' % (event.get('htmlLink')))
 
-def parse(data,specialisation):
+def parse(wb,specialisation):
     match specialisation:
         case "AI":
             splcourse = "CSET211"
@@ -80,7 +81,7 @@ def parse(data,specialisation):
             splcourse = "CSET238"
         case "Cloud Computing":
             splcourse = "CSET224"
-    ttwb = openpyxl.load_workbook(io.BytesIO(data))
+    ttwb = openpyxl.load_workbook(wb)
     tt = ttwb.active
     coursenames = [[],[],[],[],[]]
     rooms = [[],[],[],[],[]]
@@ -125,17 +126,10 @@ def parse(data,specialisation):
         c += 1
     return coursenames, rooms
 
-async def write_authorization_url(client,
-                                  redirect_uri):
-    authorization_url = await client.get_authorization_url(
-        redirect_uri,
-        scope=["https://www.googleapis.com/auth/calendar"],
-        extras_params={"access_type": "offline"},
-    )
+async def write_authorization_url(client,redirect_uri):
+    authorization_url = await client.get_authorization_url(redirect_uri,scope=["https://www.googleapis.com/auth/calendar"],extras_params={"access_type": "offline"},)
     return authorization_url
-authorization_url = asyncio.run(
-    write_authorization_url(client=client,
-                            redirect_uri=redirect_uri))
+authorization_url = asyncio.run(write_authorization_url(client=client,redirect_uri=redirect_uri))
 
 st.title('Timetable Excel Sheet to Google Calendar')
 st.session_state.token = None
@@ -154,8 +148,16 @@ if st.session_state.token:
 
 
     if uploaded_file is not None:
-        bytes_data = uploaded_file.read()
-        coursenames, rooms=parse(bytes_data,specialisation)
+        try:
+            x2x = XLS2XLSX(uploaded_file)
+            x2x.to_xlsx("spreadsheet.xlsx")
+            coursenames, rooms=parse("spreadsheet.xlsx",specialisation)
+        except ValueError:
+            coursenames, rooms = parse(uploaded_file, specialisation)
+        st.write(coursenames)
+        st.write(rooms)
+        print(coursenames)
+        print(rooms)
     
 
 # If modifying these scopes, delete the file token.json.
