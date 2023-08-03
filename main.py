@@ -4,7 +4,7 @@ import openpyxl
 
 import streamlit as st
 from ics import Calendar, Event
-from xls2xlsx import XLS2XLSX
+import pytz
 
 def connectionAPI(coursenames, rooms, cal):
     for i in range(5):
@@ -120,6 +120,7 @@ def create_event(summary, location, description,dstart,tstart, tend, cal_ref ):
         cal_ref.events.add(e)
         tstart = tstart + datetime.timedelta(days=7)
         tend = tend + datetime.timedelta(days=7)
+
 def parse(wb,specialisation, workbook):
     match specialisation:
         case "AI":
@@ -163,6 +164,7 @@ def parse(wb,specialisation, workbook):
     for i in range(2,7):
         for j in range(5,14):
             value = tt.cell(row = j, column = i).value
+            print(value)
             if value == None:
                 coursenames[c].append("Free")
                 rooms[c].append("Free")
@@ -211,18 +213,11 @@ st.subheader('Made by [M4dhav](https://madhavgupta.vercel.app/) & [Rachit](https
 
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 
-uploaded_file = st.file_uploader("Choose a file", ["xls"])
+uploaded_file = st.file_uploader("Choose a file", ["xlsx"])
 
 
 if uploaded_file is not None:
-    if uploaded_file.name.endswith(".xls"):
-        x2x = XLS2XLSX("spreadsheet.xls")
-        wb = x2x.to_xlsx()
-        coursenames, rooms = parse(
-            wb,
-            specialisation, True)
-    else:
-        coursenames, rooms=parse(uploaded_file,specialisation, False)
+    coursenames, rooms=parse(uploaded_file,specialisation, False)
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
     with open('my.ics', 'w') as f:

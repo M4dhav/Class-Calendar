@@ -1,4 +1,3 @@
 openpyxl
 ics
 streamlit
-git+https://github.com/yan-hic/xls2xlsx.git 
