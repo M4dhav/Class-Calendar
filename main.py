@@ -214,7 +214,7 @@ st.subheader('Made by [M4dhav](https://github.com/M4dhav) & [Rachit](https://rac
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 
 
-st.subheader("Step 1: Download your timetable recieved in the email which is in xls file format and convert it using this [link ↗](https://cloudconvert.com/xls-to-xlsx)")
+st.subheader("Step 1: Download your timetable recieved in the email which is in xls file format and convert it using this [link ↗](https://www.zamzar.com/convert/xls-to-xlsx/)")
 st.subheader("Step 2: Upload the converted xlsx file below")
 uploaded_file = st.file_uploader("Choose a file", ["xlsx"])
 
