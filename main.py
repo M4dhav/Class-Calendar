@@ -214,7 +214,8 @@ st.subheader('Made by [M4dhav](https://github.com/M4dhav) & [Rachit](https://rac
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 
 
-st.subheader("Only xlsx files are supported. If you have a xls file, please convert it to xlsx using this [link ↗](https://convertio.co/xls-xlsx/)")
+st.subheader("Step 1: Download your timetable recieved in the email which is in xls file format and convert it using this [link ↗](https://cloudconvert.com/xls-to-xlsx)")
+st.subheader("Step 2: Upload the converted xlsx file below")
 uploaded_file = st.file_uploader("Choose a file", ["xlsx"])
 
 
@@ -222,15 +223,13 @@ if uploaded_file is not None:
     coursenames, rooms=parse(uploaded_file,specialisation, False)
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
-    st.write("Download the generated ics file")
+    st.write("Step 3: Download the generated ics file")
     st.download_button(label="Download",data=cal.serialize(),file_name="timetable.ics",mime="text/calendar")
     st.write("We recommend creating a new calendar in your google calendar and importing the ics file into it.")
     st.write("You can then delete the calendar after the semester is over.")
 
-    st.write("[Create new calendar in google calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/createcalendar)")
+    st.write("Step 4: [Create new calendar in google calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/createcalendar)")
 
 
-    st.write("Import the ics file into your new calendar")
-
-    st.write("[Import ics file into new calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/export)")
+    st.write("Step 5:[Import ics file into your new calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/export)")
 
