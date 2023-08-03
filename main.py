@@ -1,10 +1,10 @@
 from __future__ import print_function
-import datetime
+from datetime import datetime
+from dateutil import tz
 import openpyxl
 
 import streamlit as st
 from ics import Calendar, Event
-import pytz
 
 def connectionAPI(coursenames, rooms, cal):
     for i in range(5):
