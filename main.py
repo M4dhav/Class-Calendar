@@ -232,4 +232,6 @@ if uploaded_file is not None:
 
 
     st.write("Step 5:[Import ics file into your new calendar ↗](https://calendar.google.com/calendar/u/0/r/settings/export)")
+    
+    st.write("Step 6: Sync your device with your google calendar and you are done!")
 
