@@ -1,6 +1,5 @@
 from __future__ import print_function
-from datetime import datetime
-from dateutil import tz
+import datetime
 import openpyxl
 
 import streamlit as st
@@ -108,7 +107,9 @@ def create_event(summary, location, description,dstart,tstart, tend, cal_ref ):
     tstart = int(tstart)
     tend = int(tend)
     tstart = datetime.datetime(2023, 8, dstart, tstart, 30)
+    tstart = tstart - datetime.timedelta(hours=5, minutes=30)
     tend = datetime.datetime(2023, 8, dstart, tend, 30)
+    tend = tend - datetime.timedelta(hours=5, minutes=30)
 
     for i in range(22):
         e = Event()
@@ -164,7 +165,6 @@ def parse(wb,specialisation, workbook):
     for i in range(2,7):
         for j in range(5,14):
             value = tt.cell(row = j, column = i).value
-            print(value)
             if value == None:
                 coursenames[c].append("Free")
                 rooms[c].append("Free")
@@ -222,8 +222,6 @@ if uploaded_file is not None:
     coursenames, rooms=parse(uploaded_file,specialisation, False)
     cal = Calendar()
     connectionAPI(coursenames, rooms, cal)
-    with open('my.ics', 'w') as f:
-        f.writelines(cal.serialize_iter())
     st.write("Download the generated ics file")
     st.download_button(label="Download",data=cal.serialize(),file_name="timetable.ics",mime="text/calendar")
     st.write("We recommend creating a new calendar in your google calendar and importing the ics file into it.")
