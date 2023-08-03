@@ -214,7 +214,7 @@ st.subheader('Made by [M4dhav](https://madhavgupta.vercel.app/) & [Rachit](https
 specialisation = st.selectbox('What is your specialisation?',("AI","Blockchain","Cyber Security","Data Science","Gaming","Core","DevOps","Full Stack","Quantum Computing","Drones","Robotics","IoT","AR/VR","Product Design","Cloud Computing"))
 
 
-st.subheader("Only xlsx files are supported. If you have a xls file, please convert it to xlsx using this [link ↗](https://cloudconvert.com/xls-to-xlsx)")
+st.subheader("Only xlsx files are supported. If you have a xls file, please convert it to xlsx using this [link ↗](https://convertio.co/xls-xlsx/)")
 uploaded_file = st.file_uploader("Choose a file", ["xlsx"])
 
 
