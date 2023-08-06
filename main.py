@@ -293,8 +293,7 @@ root.geometry("350x350")
 root.maxsize(350,350)
 root.minsize(350,350)
 root.title("Class Calendar")
-l = Label(root, text = '''Made by Madhav Gupta 
-    and Rachit Khurana''')
+l = Label(root, text = '''Made by Madhav Gupta''')
 toppad = Label(root, text = '''
 Class Calendar
 ''')
