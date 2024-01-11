@@ -1,0 +1,7 @@
+/.vscode
+/__pycache__
+/build
+/dist
+env.py
+GTimeTable.spec
+logo.ico

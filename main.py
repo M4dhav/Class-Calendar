@@ -12,6 +12,7 @@ import openpyxl
 from tkinter import Label,messagebox,ttk
 from xls2xlsx import XLS2XLSX
 import time
+import env
 
 client_id = os.environ.get('CLIENT_ID')
 client_secret = os.environ.get('CLIENT_SECRET')
@@ -22,7 +23,12 @@ token_uri = "https://oauth2.googleapis.com/token"
 auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
 
 global t1
-
+global splcourses
+global maincourses
+global eleccourses
+splcourses = {"AI":["CSET301", "Artificial Intelligence and Machine Learning"], "Cloud Computing":["CSET232", "Design of Cloud Architectural Solutions"] }
+maincourses = {"CSET206":"Design and Analysis of Algorithms", "CSET207":"Computer Networks", "CSET208":"Ethics for Engineers, Patents, Copyrights and IPR",\
+    "CSET209":"Operating Systems","CSET210":"Design Thinking & Innovation"}
 def create_event(summary, location, description,dstart,tstart, tend,calid, creds ):
     service = build('calendar', 'v3', credentials=creds)
 
@@ -32,11 +38,11 @@ def create_event(summary, location, description,dstart,tstart, tend,calid, creds
             'location': location,
             'description': description,
             'start': {
-                'dateTime': '2023-08-'+dstart+'T'+tstart+':30:00+05:30',
+                'dateTime': '2024-01-'+dstart+'T'+tstart+':30:00+05:30',
                 'timeZone': 'Asia/Kolkata',
             },
             'end': {
-                'dateTime': '2023-08-'+dstart+'T'+tend+':30:00+05:30',
+                'dateTime': '2024-01-'+dstart+'T'+tend+':30:00+05:30',
                 'timeZone': 'Asia/Kolkata',
             },
             'recurrence': [
@@ -51,37 +57,10 @@ def create_event(summary, location, description,dstart,tstart, tend,calid, creds
     event = service.events().insert(calendarId=calid, body=event).execute()
 
 def parse(specialisation,wb):
-    match specialisation:
-        case "AI":
-            splcourse = "CSET211"
-        case "Blockchain":
-            splcourse = "CSET212"
-        case "Cyber Security":
-            splcourse = "CSET213"
-        case "Data Science":
-            splcourse = "CSET214"
-        case "Gaming":
-            splcourse = "CSET215"
-        case "Core":
-            splcourse = "CSET216"
-        case "DevOps":
-            splcourse = "CSET217"
-        case "Full Stack":
-            splcourse = "CSET218"
-        case "Quantum Computing":
-            splcourse = "CSET219"
-        case "Drones":
-            splcourse = "CSET220"
-        case "Robotics":
-            splcourse = "CSET221"
-        case "IoT":
-            splcourse = "CSET222"
-        case "AR/VR":
-            splcourse = "CSET223"
-        case "Product Design":
-            splcourse = "CSET238"
-        case "Cloud Computing":
-            splcourse = "CSET224"
+    try:
+        splcourse = splcourses[specialisation]
+    except KeyError:
+        messagebox.showerror('Missing Resource', 'Error: The data for this specialisation is not updated yet, please wait for a future version')
     ttwb = wb
     tt = ttwb.active
     coursenames = [[],[],[],[],[]]
@@ -90,7 +69,6 @@ def parse(specialisation,wb):
     for i in range(2,7):
         for j in range(5,14):
             value = tt.cell(row = j, column = i).value
-            print(value)
             if value == None or value == "":
                 coursenames[c].append("Free")
                 rooms[c].append("Free")
@@ -98,23 +76,11 @@ def parse(specialisation,wb):
             i1 = value.index("{")
             i2 = value.index("}")
             room = value[i1+1:i2]
-            if "CSET201" in value:
+            if any(k in value for k in list(maincourses.keys())):
                 coursenames[c].append(value)
                 rooms[c].append(room)
-            elif "CSET202" in value:
-                coursenames[c].append(value)
-                rooms[c].append(room)
-            elif "CSET203" in value:
-                coursenames[c].append(value)
-                rooms[c].append(room)
-            elif "CSET240" in value:
-                coursenames[c].append(value)
-                rooms[c].append(room)
-            elif "CSET205" in value:
-                coursenames[c].append(value)
-                rooms[c].append(room)
-            elif splcourse in value:
-                i1 = value.index(splcourse)
+            elif splcourse[0] in value:
+                i1 = value.index(splcourse[0])
                 value = value[i1:]
                 i2 = value.index("}")
                 value = value[:i2+1]
@@ -127,7 +93,7 @@ def parse(specialisation,wb):
                 rooms[c].append("Free")
         c += 1
     try:
-        t1 = threading.Thread(target=Connection_API, args=(coursenames,rooms,))
+        t1 = threading.Thread(target=Connection_API, args=(coursenames,rooms,splcourse))
         t1.start()
     except TimeoutError:
         messagebox.showerror('Authentication Timed Out', 'Error: Please try using a different internet connection')
@@ -141,7 +107,7 @@ def convert(file,specialisation):
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
-def Connection_API(coursenames, rooms):
+def Connection_API(coursenames, rooms, splcourse):
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -167,7 +133,7 @@ def Connection_API(coursenames, rooms):
 
     try:
         calendar = {
-        'summary': 'Bennett Sem 3 Timetable',
+        'summary': 'Bennett Sem 4 Timetable',
         'timeZone': 'Asia/Kolkata'
         }
         service = build('calendar', 'v3', credentials=creds)
@@ -178,15 +144,15 @@ def Connection_API(coursenames, rooms):
                 value = coursenames[i][j]
                 match i:
                     case 0:
-                        dstart = '07'
+                        dstart = '15'
                     case 1:
-                        dstart = '01'
+                        dstart = '16'
                     case 2:
-                        dstart = '02'
+                        dstart = '17'
                     case 3:
-                        dstart = '03'
+                        dstart = '11'
                     case 4:
-                        dstart = '04'
+                        dstart = '12'
                 match j:
                     case 0:
                         tstart = '08'
@@ -220,52 +186,19 @@ def Connection_API(coursenames, rooms):
                 progBar['value'] += 2.22222222222
                 if coursenames[i][j] == "Free":
                         continue
-                elif "CSET201" in value:
-                    summary = "Information Management Systems "
-                elif "CSET202" in value:
-                    summary = "Data Structures using C++ "
-                elif "CSET203" in value:
-                    summary = "Microprocessors and Computer Architecture "
-                elif "CSET240" in value:
-                    summary = "Probability and Statistics "
-                elif "CSET205" in value:
-                    summary = "Software Engineering "
-                elif "CSET211" in value:
-                    summary = "Statistical Machine Learning "
-                elif "CSET212" in value:
-                    summary = "Blockchain Foundations "
-                elif "CSET213" in value:
-                    summary = "Linux and Shell Programming "
-                elif "CSET214" in value:
-                    summary = "Data Analysis using Python "
-                elif "CSET215" in value:
-                    summary = "Graphics and Visual Computing "
-                elif "CSET216" in value:
-                    summary = "UI/UX Design for Human Computer Interface "
-                elif "CSET217" in value:
-                    summary = "Software Development with DevOps "
-                elif "CSET218" in value:
-                    summary = "Full Stack Development "
-                elif "CSET219" in value:
-                    summary = "Quantum Computing Foundations "
-                elif "CSET220" in value:
-                    summary = "Unmanned Aerial Vehicles "
-                elif "CSET221" in value:
-                    summary = "Robotic Process Automation Essentials "
-                elif "CSET222" in value:
-                    summary = "Microcontrollers, Robotics & Embedded Systems "
-                elif "CSET223" in value:
-                    summary = "Augmented Reality Foundations "
-                elif "CSET224" in value:
-                    summary = "Cloud Computing "
-                elif "CSET238" in value:
-                    summary = "Product Design Principles and Practice "
+                else:
+                    for k in list(maincourses.keys()):
+                        if k in value:
+                            summary = maincourses[k]
+                            continue
+                    if splcourse[0] in value:
+                        summary = splcourse[1]
                 if "(L)" in value:
-                    summary += "Lecture"
+                    summary += " Lecture"
                 elif "(T)" in value:
-                    summary += "Tutorial"
+                    summary += " Tutorial"
                 elif "(P)" in value:
-                    summary += "Lab"
+                    summary += " Lab"
                 create_event(summary, location, description,dstart,tstart, tend,calid, creds)
         messagebox.showinfo("Completed", "Your Google Calendar has been updated with all the classes")
         progBar["value"] = 0
